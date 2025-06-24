@@ -1,6 +1,23 @@
 # YouTube Content to GPT Chrome Extension
 
-A Chrome extension that extracts YouTube video content and generates AI-powered summaries using ChatGPT.
+[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Available-brightgreen?style=for-the-badge&logo=googlechrome)](https://chrome.google.com/webstore)
+[![GitHub release](https://img.shields.io/github/v/release/builderdotai/youtube-content-to-gpt?style=for-the-badge&logo=github)](https://github.com/builderdotai/youtube-content-to-gpt/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow?style=for-the-badge&logo=javascript)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+
+A powerful Chrome extension that extracts YouTube video content and generates AI-powered summaries using ChatGPT.
+
+## 🚀 Quick Start
+
+### Install from Chrome Web Store
+*[Link will be added once approved]*
+
+### Install Manually
+1. Download the [latest release](https://github.com/builderdotai/youtube-content-to-gpt/releases/latest)
+2. Extract the zip file
+3. Open `chrome://extensions/`
+4. Enable "Developer mode"
+5. Click "Load unpacked" and select the extracted folder
 
 ## Features
 
@@ -156,11 +173,28 @@ SOFTWARE.
 - Error handling and user feedback
 - Security optimizations
 
+## 🔗 Links
+
+- **GitHub Repository**: https://github.com/builderdotai/youtube-content-to-gpt
+- **Chrome Web Store**: *Coming soon*
+- **Issues & Bug Reports**: https://github.com/builderdotai/youtube-content-to-gpt/issues
+- **Latest Release**: https://github.com/builderdotai/youtube-content-to-gpt/releases/latest
+
 ## Support
 
-- GitHub Issues: Create an issue for bug reports or feature requests
-- Email: [Your support email]
+- **GitHub Issues**: [Create an issue](https://github.com/builderdotai/youtube-content-to-gpt/issues) for bug reports or feature requests
+- **Discussions**: [GitHub Discussions](https://github.com/builderdotai/youtube-content-to-gpt/discussions) for questions and ideas
+
+## 🌟 Show Your Support
+
+If this extension helps you, please:
+- ⭐ Star this repository
+- 🐛 Report bugs and suggest features
+- 🤝 Contribute to the codebase
+- 📢 Share with others who might find it useful
 
 ---
 
 **Made with ❤️ for productivity and learning**
+
+*🤖 Built with [Claude Code](https://claude.ai/code)*
