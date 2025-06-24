@@ -1,0 +1,40 @@
+# Chrome Extension Development
+*.zip
+*.crx
+*.pem
+
+# Development files
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Node modules (if added later)
+node_modules/
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+
+# Claude AI files
+.claude/
+
+# Screenshots and temporary images
+screenshots/
+temp_screenshots/
+
+# Distribution folder
+dist/
+build/
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
