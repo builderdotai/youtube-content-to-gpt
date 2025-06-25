@@ -49,13 +49,38 @@
         .hidden {
             display: none;
         }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .header h3 {
+            margin: 0;
+        }
+        .settings-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        .settings-btn:hover {
+            background-color: #f0f0f0;
+        }
     </style>
 </head>
 <body>
-    <h3>YouTube Content to GPT</h3>
-    <p>Extract YouTube video content and send to ChatGPT</p>
+    <div class="header">
+        <h3>YouTube Content to GPT</h3>
+        <button id="settingsBtn" class="settings-btn" title="Open Settings">⚙️</button>
+    </div>
+    <p>Extract YouTube video content and send to AI</p>
     <div id="status" class="status hidden"></div>
     <button id="extractBtn">Extract Content</button>
+    <script src="config.js"></script>
     <script src="popup.js"></script>
 </body>
 </html>

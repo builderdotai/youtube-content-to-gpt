@@ -1,12 +1,13 @@
 {
   "manifest_version": 3,
   "name": "YouTube Content to GPT",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Extract YouTube video content, transcripts, and descriptions to generate AI-powered summaries in ChatGPT",
   "author": "Your Name",
   "permissions": [
     "activeTab",
-    "scripting"
+    "scripting",
+    "storage"
   ],
   "host_permissions": [
     "https://www.youtube.com/*",
@@ -27,6 +28,10 @@
     "default_popup": "popup.html",
     "default_title": "Extract YouTube content for GPT summarization"
   },
+  "options_ui": {
+    "page": "settings.html",
+    "open_in_tab": true
+  },
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
@@ -37,7 +42,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["styles.css"],
+      "resources": ["styles.css", "config.js"],
       "matches": ["https://www.youtube.com/*"]
     }
   ]

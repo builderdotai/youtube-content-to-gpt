@@ -1,6 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
     const extractBtn = document.getElementById('extractBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
     const status = document.getElementById('status');
+    
+    // Load user settings
+    let userSettings = null;
+    loadUserSettings();
+    
+    // Settings button click handler
+    settingsBtn.addEventListener('click', function() {
+        chrome.runtime.openOptionsPage();
+    });
     
     extractBtn.addEventListener('click', function() {
         showStatus('Extracting content...', 'loading');
@@ -51,20 +61,25 @@ document.addEventListener('DOMContentLoaded', function() {
     function showError(message) {
         showStatus(message, 'error');
     }
+    
+    async function loadUserSettings() {
+        try {
+            const defaultSettings = window.ExtensionConfig.DEFAULT_SETTINGS;
+            const result = await chrome.storage.sync.get(defaultSettings);
+            userSettings = result;
+        } catch (error) {
+            console.error('Error loading settings:', error);
+            // Use defaults if storage fails
+            userSettings = window.ExtensionConfig.DEFAULT_SETTINGS;
+        }
+    }
 });
 
 function extractYouTubeContent() {
     try {
-        // Multiple selectors for video title (YouTube changes these frequently)
-        const titleSelectors = [
-            'h1.ytd-watch-metadata yt-formatted-string',
-            'h1.ytd-video-primary-info-renderer yt-formatted-string', 
-            'h1.style-scope.ytd-watch-metadata',
-            'h1.style-scope.ytd-video-primary-info-renderer',
-            'h1[class*="title"]',
-            '.title.style-scope.ytd-video-primary-info-renderer',
-            'yt-formatted-string.style-scope.ytd-watch-metadata'
-        ];
+        // Get selectors from shared configuration
+        const selectors = window.ExtensionConfig.YOUTUBE_SELECTORS;
+        const titleSelectors = selectors.title;
         
         let videoTitle = 'Unknown Title';
         for (const selector of titleSelectors) {
@@ -80,11 +95,7 @@ function extractYouTubeContent() {
         let contentSource = '';
         
         // Method 1: Look for visible transcript/captions
-        const transcriptSelectors = [
-            '[data-start-time]',
-            '.ytd-transcript-segment-renderer',
-            '.cue-group-start-offset'
-        ];
+        const transcriptSelectors = selectors.transcript;
         
         for (const selector of transcriptSelectors) {
             const elements = document.querySelectorAll(selector);
@@ -100,15 +111,7 @@ function extractYouTubeContent() {
         
         // Method 2: Try to get video description
         if (!transcript) {
-            const descriptionSelectors = [
-                '#description-text',
-                '.ytd-watch-metadata #description-text',
-                '.ytd-watch-metadata .content',
-                '#description .content',
-                '.content.style-scope.ytd-video-secondary-info-renderer',  
-                'ytd-expandable-video-description-body-renderer #description-text',
-                'ytd-video-description-content-renderer .content'
-            ];
+            const descriptionSelectors = selectors.description;
             
             for (const selector of descriptionSelectors) {
                 const element = document.querySelector(selector);
@@ -122,7 +125,7 @@ function extractYouTubeContent() {
         
         // Method 3: Extract comments as fallback
         if (!transcript) {
-            const commentElements = document.querySelectorAll('#content-text');
+            const commentElements = document.querySelectorAll(selectors.comments[0]);
             if (commentElements.length > 0) {
                 const comments = Array.from(commentElements)
                     .slice(0, 5) // First 5 comments
@@ -152,17 +155,9 @@ function extractYouTubeContent() {
             }
         }
         
-        // Get video metadata
-        const channelSelectors = [
-            '.ytd-watch-metadata #channel-name a',
-            '#channel-name a', 
-            '.ytd-channel-name a',
-            'ytd-video-owner-renderer a#text',
-            '.owner-text a'
-        ];
-        
+        // Get video metadata using shared selectors
         let channelName = 'Unknown Channel';
-        for (const selector of channelSelectors) {
+        for (const selector of selectors.channel) {
             const element = document.querySelector(selector);
             if (element && element.textContent.trim()) {
                 channelName = element.textContent.trim();
@@ -170,8 +165,8 @@ function extractYouTubeContent() {
             }
         }
         
-        const viewCount = document.querySelector('#info .view-count, .view-count, .ytd-watch-metadata .view-count')?.textContent?.trim() || '';
-        const publishDate = document.querySelector('#info-strings yt-formatted-string, .date, .ytd-watch-metadata .date')?.textContent?.trim() || '';
+        const viewCount = document.querySelector(selectors.viewCount.join(', '))?.textContent?.trim() || '';
+        const publishDate = document.querySelector(selectors.publishDate.join(', '))?.textContent?.trim() || '';
         
         return {
             title: videoTitle,
@@ -192,31 +187,54 @@ function extractYouTubeContent() {
 }
 
 function openChatGPTWithContent(content) {
-    const prompt = `Please summarize the following YouTube video content:
-
-**Video Details:**
-- Title: ${content.title}
-- Channel: ${content.channel}
-- URL: ${content.url}
-${content.metadata.views ? `- Views: ${content.metadata.views}` : ''}
-${content.metadata.published ? `- Published: ${content.metadata.published}` : ''}
-
-**Content Source:** ${content.contentSource}
-
-**Content:**
-${content.transcript}
-
-**Instructions:**
-Please provide a comprehensive summary including:
-1. Main topic and key points
-2. Important insights or takeaways
-3. Any actionable advice or conclusions
-4. Target audience or use cases (if apparent)
-
-Format your response in a clear, structured manner with bullet points or sections as appropriate.`;
+    // Use userSettings if available, fallback to defaults
+    const settings = userSettings || {
+        aiProvider: 'chatgpt',
+        customUrl: '',
+        customPrompt: 'Please summarize this YouTube video: {title}\n\nContent: {content}',
+        autoOpen: true
+    };
     
+    // Create prompt using template with variable substitution
+    let prompt = settings.customPrompt;
+    
+    // Replace template variables
+    const variables = {
+        title: content.title || 'Unknown Title',
+        channel: content.channel || 'Unknown Channel',
+        url: content.url || '',
+        content: content.transcript || '',
+        views: content.metadata?.views || '',
+        published: content.metadata?.published || '',
+        contentSource: content.contentSource || 'unknown'
+    };
+    
+    // Replace all variables in the prompt
+    Object.keys(variables).forEach(key => {
+        const regex = new RegExp(`\\{${key}\\}`, 'g');
+        prompt = prompt.replace(regex, variables[key]);
+    });
+    
+    // Handle conditional variables using helper function
+    prompt = replaceConditionalVariables(prompt, variables);
+    
+    // Get AI providers from shared configuration
+    const AI_PROVIDERS = window.ExtensionConfig.AI_PROVIDERS;
+    
+    let targetUrl;
+    if (settings.aiProvider === 'custom' && settings.customUrl) {
+        targetUrl = settings.customUrl;
+    } else {
+        const provider = AI_PROVIDERS[settings.aiProvider] || AI_PROVIDERS.chatgpt;
+        targetUrl = provider.url;
+    }
+    
+    // Replace {content} placeholder in URL with encoded prompt
     const encodedPrompt = encodeURIComponent(prompt);
-    const chatGPTUrl = `https://chat.openai.com/?q=${encodedPrompt}`;
+    targetUrl = targetUrl.replace('{content}', encodedPrompt);
     
-    chrome.tabs.create({ url: chatGPTUrl });
+    // Open the AI provider
+    if (settings.autoOpen !== false) {
+        chrome.tabs.create({ url: targetUrl });
+    }
 }
