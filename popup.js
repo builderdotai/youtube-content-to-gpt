@@ -280,14 +280,8 @@ function openChatGPTWithContent(content) {
         prompt = prompt.replace(regex, variables[key]);
     });
     
-    // Handle conditional variables (like {views ? `- Views: ${views}` : ''})
-    prompt = prompt.replace(/\{(\w+)\s*\?\s*`([^`]+)`\s*:\s*'([^']*)'\}/g, (match, varName, trueTemplate, falseTemplate) => {
-        const value = variables[varName];
-        if (value && value.trim()) {
-            return trueTemplate.replace(/\$\{(\w+)\}/g, (m, v) => variables[v] || '');
-        }
-        return falseTemplate;
-    });
+    // Handle conditional variables using helper function
+    prompt = replaceConditionalVariables(prompt, variables);
     
     // Determine AI provider URL
     const AI_PROVIDERS = {
