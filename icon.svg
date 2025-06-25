@@ -1,0 +1,44 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .youtube-red { fill: #FF0000; }
+      .white { fill: #FFFFFF; }
+      .light-gray { fill: #F5F5F5; }
+      .dark-gray { fill: #333333; }
+    </style>
+  </defs>
+  
+  <!-- Background circle with YouTube red -->
+  <circle cx="64" cy="64" r="60" class="youtube-red"/>
+  
+  <!-- YouTube play button (triangle) -->
+  <polygon points="50,45 50,83 85,64" class="white"/>
+  
+  <!-- AI/Summary lines representing text summarization -->
+  <g class="white">
+    <!-- Long line -->
+    <rect x="25" y="95" width="35" height="3" rx="1.5"/>
+    <!-- Medium line -->
+    <rect x="25" y="101" width="25" height="3" rx="1.5"/>
+    <!-- Short line -->
+    <rect x="25" y="107" width="15" height="3" rx="1.5"/>
+    
+    <!-- Arrow pointing to summarized text -->
+    <path d="M68 95 L75 98.5 L68 102 L70 98.5 Z" class="white"/>
+    
+    <!-- Summarized content (shorter lines) -->
+    <rect x="78" y="95" width="25" height="3" rx="1.5"/>
+    <rect x="78" y="101" width="20" height="3" rx="1.5"/>
+    <rect x="78" y="107" width="15" height="3" rx="1.5"/>
+  </g>
+  
+  <!-- Small AI sparkle/star to indicate AI processing -->
+  <g class="white" transform="translate(95, 35)">
+    <path d="M0,-8 L2,-2 L8,0 L2,2 L0,8 L-2,2 L-8,0 L-2,-2 Z" opacity="0.9"/>
+  </g>
+  
+  <!-- Small sparkle -->
+  <g class="white" transform="translate(35, 25)">
+    <path d="M0,-4 L1,-1 L4,0 L1,1 L0,4 L-1,1 L-4,0 L-1,-1 Z" opacity="0.7"/>
+  </g>
+</svg>
