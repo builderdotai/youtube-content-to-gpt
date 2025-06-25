@@ -1,6 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
     const extractBtn = document.getElementById('extractBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
     const status = document.getElementById('status');
+    
+    // Load user settings
+    let userSettings = null;
+    loadUserSettings();
+    
+    // Settings button click handler
+    settingsBtn.addEventListener('click', function() {
+        chrome.runtime.openOptionsPage();
+    });
     
     extractBtn.addEventListener('click', function() {
         showStatus('Extracting content...', 'loading');
@@ -50,6 +60,56 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function showError(message) {
         showStatus(message, 'error');
+    }
+    
+    async function loadUserSettings() {
+        try {
+            const defaultSettings = {
+                aiProvider: 'chatgpt',
+                customUrl: '',
+                customPrompt: `Please summarize the following YouTube video content:
+
+**Video Details:**
+- Title: {title}
+- Channel: {channel}
+- URL: {url}
+{views ? \`- Views: \${views}\` : ''}
+{published ? \`- Published: \${published}\` : ''}
+
+**Content:**
+{content}
+
+**Instructions:**
+Please provide a comprehensive summary including:
+1. Main topic and key points
+2. Important insights or takeaways
+3. Any actionable advice or conclusions
+4. Target audience or use cases (if apparent)
+
+Format your response in a clear, structured manner with bullet points or sections as appropriate.`,
+                extractTranscript: true,
+                extractDescription: true,
+                extractComments: true,
+                autoOpen: true,
+                closePopup: true
+            };
+            
+            const result = await chrome.storage.sync.get(defaultSettings);
+            userSettings = result;
+        } catch (error) {
+            console.error('Error loading settings:', error);
+            // Use defaults if storage fails
+            userSettings = {
+                aiProvider: 'chatgpt',
+                customUrl: '',
+                customPrompt: defaultSettings.customPrompt,
+                extractTranscript: true,
+                extractDescription: true,
+                extractComments: true,
+                autoOpen: true,
+                closePopup: true
+            };
+        }
     }
 });
 
@@ -192,31 +252,64 @@ function extractYouTubeContent() {
 }
 
 function openChatGPTWithContent(content) {
-    const prompt = `Please summarize the following YouTube video content:
-
-**Video Details:**
-- Title: ${content.title}
-- Channel: ${content.channel}
-- URL: ${content.url}
-${content.metadata.views ? `- Views: ${content.metadata.views}` : ''}
-${content.metadata.published ? `- Published: ${content.metadata.published}` : ''}
-
-**Content Source:** ${content.contentSource}
-
-**Content:**
-${content.transcript}
-
-**Instructions:**
-Please provide a comprehensive summary including:
-1. Main topic and key points
-2. Important insights or takeaways
-3. Any actionable advice or conclusions
-4. Target audience or use cases (if apparent)
-
-Format your response in a clear, structured manner with bullet points or sections as appropriate.`;
+    // Use userSettings if available, fallback to defaults
+    const settings = userSettings || {
+        aiProvider: 'chatgpt',
+        customUrl: '',
+        customPrompt: 'Please summarize this YouTube video: {title}\n\nContent: {content}',
+        autoOpen: true
+    };
     
+    // Create prompt using template with variable substitution
+    let prompt = settings.customPrompt;
+    
+    // Replace template variables
+    const variables = {
+        title: content.title || 'Unknown Title',
+        channel: content.channel || 'Unknown Channel',
+        url: content.url || '',
+        content: content.transcript || '',
+        views: content.metadata?.views || '',
+        published: content.metadata?.published || '',
+        contentSource: content.contentSource || 'unknown'
+    };
+    
+    // Replace all variables in the prompt
+    Object.keys(variables).forEach(key => {
+        const regex = new RegExp(`\\{${key}\\}`, 'g');
+        prompt = prompt.replace(regex, variables[key]);
+    });
+    
+    // Handle conditional variables (like {views ? `- Views: ${views}` : ''})
+    prompt = prompt.replace(/\{(\w+)\s*\?\s*`([^`]+)`\s*:\s*'([^']*)'\}/g, (match, varName, trueTemplate, falseTemplate) => {
+        const value = variables[varName];
+        if (value && value.trim()) {
+            return trueTemplate.replace(/\$\{(\w+)\}/g, (m, v) => variables[v] || '');
+        }
+        return falseTemplate;
+    });
+    
+    // Determine AI provider URL
+    const AI_PROVIDERS = {
+        chatgpt: 'https://chat.openai.com/?q={content}',
+        claude: 'https://claude.ai/chat?q={content}',
+        gemini: 'https://gemini.google.com/app?q={content}',
+        custom: settings.customUrl
+    };
+    
+    let targetUrl = AI_PROVIDERS[settings.aiProvider] || AI_PROVIDERS.chatgpt;
+    
+    // For custom URLs, use the provided URL
+    if (settings.aiProvider === 'custom' && settings.customUrl) {
+        targetUrl = settings.customUrl;
+    }
+    
+    // Replace {content} placeholder in URL with encoded prompt
     const encodedPrompt = encodeURIComponent(prompt);
-    const chatGPTUrl = `https://chat.openai.com/?q=${encodedPrompt}`;
+    targetUrl = targetUrl.replace('{content}', encodedPrompt);
     
-    chrome.tabs.create({ url: chatGPTUrl });
+    // Open the AI provider
+    if (settings.autoOpen !== false) {
+        chrome.tabs.create({ url: targetUrl });
+    }
 }

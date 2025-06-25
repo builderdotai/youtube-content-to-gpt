@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>YouTube Content to GPT - Settings</title>
+    <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>YouTube Content to GPT</h1>
+            <p class="subtitle">Configure your AI provider and customize prompts</p>
+        </header>
+
+        <main>
+            <section class="settings-section">
+                <h2>🤖 AI Provider</h2>
+                <div class="form-group">
+                    <label for="aiProvider">Choose your AI provider:</label>
+                    <select id="aiProvider" class="form-control">
+                        <option value="chatgpt">ChatGPT (OpenAI)</option>
+                        <option value="claude">Claude (Anthropic)</option>
+                        <option value="gemini">Gemini (Google)</option>
+                        <option value="custom">Custom URL</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="customUrlGroup" style="display: none;">
+                    <label for="customUrl">Custom AI Provider URL:</label>
+                    <input type="url" id="customUrl" class="form-control" 
+                           placeholder="https://your-ai-provider.com/chat?q=">
+                    <small class="form-text">Use {content} as placeholder for the extracted content</small>
+                </div>
+            </section>
+
+            <section class="settings-section">
+                <h2>✏️ Prompt Customization</h2>
+                <div class="form-group">
+                    <label for="customPrompt">Summarization Prompt:</label>
+                    <textarea id="customPrompt" class="form-control" rows="8" 
+                              placeholder="Enter your custom prompt here..."></textarea>
+                    <small class="form-text">
+                        Available variables: {title}, {channel}, {url}, {content}, {views}, {published}
+                    </small>
+                </div>
+
+                <div class="prompt-templates">
+                    <h3>📋 Preset Templates</h3>
+                    <div class="template-buttons">
+                        <button type="button" class="btn btn-secondary" data-template="default">Default Summary</button>
+                        <button type="button" class="btn btn-secondary" data-template="academic">Academic Analysis</button>
+                        <button type="button" class="btn btn-secondary" data-template="business">Business Insights</button>
+                        <button type="button" class="btn btn-secondary" data-template="simple">Simple Summary</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="settings-section">
+                <h2>⚙️ Content Extraction</h2>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="extractTranscript" checked>
+                        <span class="checkmark"></span>
+                        Extract video transcripts/captions (highest priority)
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="extractDescription" checked>
+                        <span class="checkmark"></span>
+                        Extract video description (fallback)
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="extractComments" checked>
+                        <span class="checkmark"></span>
+                        Extract top comments (last resort)
+                    </label>
+                </div>
+            </section>
+
+            <section class="settings-section">
+                <h2>🔧 Behavior</h2>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="autoOpen" checked>
+                        <span class="checkmark"></span>
+                        Automatically open AI provider after extraction
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="closePopup" checked>
+                        <span class="checkmark"></span>
+                        Close extension popup after successful extraction
+                    </label>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="button-group">
+                <button type="button" id="saveSettings" class="btn btn-primary">Save Settings</button>
+                <button type="button" id="resetSettings" class="btn btn-secondary">Reset to Defaults</button>
+                <button type="button" id="exportSettings" class="btn btn-outline">Export Settings</button>
+                <button type="button" id="importSettings" class="btn btn-outline">Import Settings</button>
+            </div>
+            <input type="file" id="importFile" accept=".json" style="display: none;">
+            
+            <div class="status" id="status"></div>
+            
+            <div class="footer-info">
+                <p>YouTube Content to GPT v1.0.0</p>
+                <p><a href="https://github.com/builderdotai/youtube-content-to-gpt" target="_blank">GitHub Repository</a></p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="settings.js"></script>
+</body>
+</html>
