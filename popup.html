@@ -11,15 +11,16 @@
         button {
             width: 100%;
             padding: 10px;
-            background: #ff0000;
-            color: white;
+            background: rgb(217, 244, 0);
+            color: #141414;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 500;
         }
         button:hover {
-            background: #cc0000;
+            background: rgb(195, 220, 0);
         }
         button:disabled {
             background: #999;
@@ -74,10 +75,10 @@
 </head>
 <body>
     <div class="header">
-        <h3>YouTube Content to GPT</h3>
+        <h3>Video Content to AI</h3>
         <button id="settingsBtn" class="settings-btn" title="Open Settings">⚙️</button>
     </div>
-    <p>Extract YouTube video content and send to AI</p>
+    <p>Extract video content and send to AI</p>
     <div id="status" class="status hidden"></div>
     <button id="extractBtn">Extract Content</button>
     <script src="config.js"></script>

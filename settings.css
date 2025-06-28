@@ -22,8 +22,8 @@ body {
 
 /* Header */
 header {
-    background: linear-gradient(135deg, #ff0000, #cc0000);
-    color: white;
+    background: linear-gradient(135deg, rgb(217, 244, 0), rgb(195, 220, 0));
+    color: #141414;
     padding: 2rem;
     text-align: center;
 }
@@ -91,8 +91,8 @@ label {
 
 .form-control:focus {
     outline: none;
-    border-color: #ff0000;
-    box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.1);
+    border-color: rgb(217, 244, 0);
+    box-shadow: 0 0 0 3px rgba(217, 244, 0, 0.2);
 }
 
 textarea.form-control {
@@ -137,17 +137,17 @@ textarea.form-control {
 }
 
 .checkbox-label:hover .checkmark {
-    border-color: #ff0000;
+    border-color: rgb(217, 244, 0);
 }
 
 .checkbox-label input[type="checkbox"]:checked + .checkmark {
-    background-color: #ff0000;
-    border-color: #ff0000;
+    background-color: rgb(217, 244, 0);
+    border-color: rgb(217, 244, 0);
 }
 
 .checkbox-label input[type="checkbox"]:checked + .checkmark::after {
     content: "✓";
-    color: white;
+    color: #141414;
     font-size: 14px;
     font-weight: bold;
 }
@@ -167,12 +167,13 @@ textarea.form-control {
 }
 
 .btn-primary {
-    background-color: #ff0000;
-    color: white;
+    background-color: rgb(217, 244, 0);
+    color: #141414;
+    font-weight: 500;
 }
 
 .btn-primary:hover {
-    background-color: #cc0000;
+    background-color: rgb(195, 220, 0);
     transform: translateY(-1px);
 }
 
@@ -187,13 +188,13 @@ textarea.form-control {
 
 .btn-outline {
     background-color: transparent;
-    color: #ff0000;
-    border: 2px solid #ff0000;
+    color: rgb(195, 220, 0);
+    border: 2px solid rgb(195, 220, 0);
 }
 
 .btn-outline:hover {
-    background-color: #ff0000;
-    color: white;
+    background-color: rgb(195, 220, 0);
+    color: #141414;
 }
 
 /* Template Buttons */
@@ -257,7 +258,7 @@ footer {
 }
 
 .footer-info a {
-    color: #ff0000;
+    color: rgb(195, 220, 0);
     text-decoration: none;
 }
 

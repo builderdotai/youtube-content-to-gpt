@@ -21,13 +21,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Check if we're on YouTube
             if (!currentTab.url.includes('youtube.com/watch')) {
-                showError('Please navigate to a YouTube video page first.');
+                showError('Please navigate to a video page first.');
                 return;
             }
             
             chrome.scripting.executeScript({
                 target: {tabId: currentTab.id},
-                function: extractYouTubeContent
+                function: extractYouTubeContent,
+                args: [window.ExtensionConfig.YOUTUBE_SELECTORS]
             }, (result) => {
                 extractBtn.disabled = false;
                 
@@ -42,8 +43,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         showError(content.error);
                     } else {
                         showStatus('Opening ChatGPT...', 'success');
-                        openChatGPTWithContent(content);
-                        setTimeout(() => window.close(), 1000);
+                        try {
+                            openChatGPTWithContent(content, userSettings);
+                            setTimeout(() => window.close(), 1000);
+                        } catch (error) {
+                            console.error('Error opening ChatGPT:', error);
+                            showError('Failed to open ChatGPT: ' + error.message);
+                        }
                     }
                 } else {
                     showError('Failed to extract content from the page.');
@@ -75,10 +81,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-function extractYouTubeContent() {
+function extractYouTubeContent(selectors) {
     try {
-        // Get selectors from shared configuration
-        const selectors = window.ExtensionConfig.YOUTUBE_SELECTORS;
+        // Use selectors passed as argument
         const titleSelectors = selectors.title;
         
         let videoTitle = 'Unknown Title';
@@ -186,17 +191,17 @@ function extractYouTubeContent() {
     }
 }
 
-function openChatGPTWithContent(content) {
-    // Use userSettings if available, fallback to defaults
-    const settings = userSettings || {
+function openChatGPTWithContent(content, settings) {
+    // Use passed settings or fallback to defaults
+    const finalSettings = settings || {
         aiProvider: 'chatgpt',
         customUrl: '',
-        customPrompt: 'Please summarize this YouTube video: {title}\n\nContent: {content}',
+        customPrompt: 'Please summarize this video: {title}\n\nContent: {content}',
         autoOpen: true
     };
     
     // Create prompt using template with variable substitution
-    let prompt = settings.customPrompt;
+    let prompt = finalSettings.customPrompt;
     
     // Replace template variables
     const variables = {
@@ -215,17 +220,31 @@ function openChatGPTWithContent(content) {
         prompt = prompt.replace(regex, variables[key]);
     });
     
-    // Handle conditional variables using helper function
-    prompt = replaceConditionalVariables(prompt, variables);
+    // Handle conditional variables (views and published)
+    prompt = prompt.replace(/\{views \? `- Views: \${views}` : ''\}/g, variables.views ? `- Views: ${variables.views}` : '');
+    prompt = prompt.replace(/\{published \? `- Published: \${published}` : ''\}/g, variables.published ? `- Published: ${variables.published}` : '');
     
     // Get AI providers from shared configuration
-    const AI_PROVIDERS = window.ExtensionConfig.AI_PROVIDERS;
+    const AI_PROVIDERS = {
+        chatgpt: {
+            name: 'ChatGPT',
+            url: 'https://chat.openai.com/?q={content}',
+            description: 'OpenAI ChatGPT',
+            icon: '🤖'
+        },
+        claude: {
+            name: 'Claude',
+            url: 'https://claude.ai/chat?q={content}',
+            description: 'Anthropic Claude',
+            icon: '🧠'
+        }
+    };
     
     let targetUrl;
-    if (settings.aiProvider === 'custom' && settings.customUrl) {
-        targetUrl = settings.customUrl;
+    if (finalSettings.aiProvider === 'custom' && finalSettings.customUrl) {
+        targetUrl = finalSettings.customUrl;
     } else {
-        const provider = AI_PROVIDERS[settings.aiProvider] || AI_PROVIDERS.chatgpt;
+        const provider = AI_PROVIDERS[finalSettings.aiProvider] || AI_PROVIDERS.chatgpt;
         targetUrl = provider.url;
     }
     
@@ -234,7 +253,14 @@ function openChatGPTWithContent(content) {
     targetUrl = targetUrl.replace('{content}', encodedPrompt);
     
     // Open the AI provider
-    if (settings.autoOpen !== false) {
-        chrome.tabs.create({ url: targetUrl });
+    if (finalSettings.autoOpen !== false) {
+        console.log('Opening URL:', targetUrl);
+        chrome.tabs.create({ url: targetUrl }, (tab) => {
+            if (chrome.runtime.lastError) {
+                console.error('Failed to create tab:', chrome.runtime.lastError);
+            } else {
+                console.log('Tab created successfully:', tab);
+            }
+        });
     }
 }
